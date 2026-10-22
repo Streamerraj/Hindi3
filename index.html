@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TG_@Cricmatchstream</title>
+<meta name="referrer" content="no-referrer">
+
+<script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.2/dist/shaka-player.ui.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.2/dist/controls.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Segoe UI',Roboto,Arial,sans-serif}
+
+.shaka-video-container{
+position:fixed;inset:0;background:#000;
+display:flex;align-items:center;justify-content:center;
+}
+video{width:100%;height:100%;object-fit:contain;background:#000}
+
+.custom-watermark{
+position:absolute;z-index:40;pointer-events:none;
+top:65%;left:6%;transform:translateY(-50%);
+font-size:11px;font-weight:600;color:rgba(255,255,255,.12);
+}
+
+.block-overlay{
+position:fixed;inset:0;z-index:99999;display:flex;
+align-items:center;justify-content:center;
+background:radial-gradient(circle at center,#1a1a1a,#000);
+text-align:center;
+}
+.block-box{
+padding:40px;max-width:500px;width:90%;
+background:rgba(20,20,20,.95);border-radius:16px;
+border:1px solid rgba(255,255,255,.1);
+box-shadow:0 20px 50px rgba(0,0,0,.5);
+animation:fadeInUp .6s ease-out;
+}
+@keyframes fadeInUp{
+from{opacity:0;transform:translateY(30px)}
+to{opacity:1;transform:translateY(0)}
+}
+.block-title{
+font-size:42px;font-weight:800;color:#fff;
+text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;
+}
+.block-sub{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6}
+
+/* Telegram popup */
+.telegram-overlay{
+position:fixed;inset:0;z-index:100000;
+display:none;align-items:center;justify-content:center;
+padding:20px;background:rgba(0,0,0,.82);
+}
+.telegram-overlay.show{display:flex}
+.telegram-box{
+width:100%;max-width:340px;padding:28px 22px;
+text-align:center;background:#151515;color:#fff;
+border:1px solid #303030;border-radius:18px;
+box-shadow:0 15px 45px rgba(0,0,0,.6);
+}
+.telegram-icon{
+width:58px;height:58px;margin:0 auto 15px;
+border-radius:50%;background:#229ED9;color:white;
+display:flex;align-items:center;justify-content:center;
+font-size:29px;font-weight:bold;
+}
+.telegram-box h2{font-size:22px;margin-bottom:10px}
+.telegram-box p{
+font-size:14px;color:#bbb;line-height:1.5;margin-bottom:20px;
+}
+.telegram-btn{
+display:block;width:100%;padding:13px 10px;
+border:0;border-radius:9px;background:#229ED9;color:#fff;
+font-size:15px;font-weight:700;text-decoration:none;
+cursor:pointer;margin-bottom:12px;
+}
+.telegram-close{
+width:100%;padding:11px;border:1px solid #444;
+border-radius:9px;background:#242424;color:#ddd;
+font-size:14px;cursor:pointer;
+}
+@media(max-width:700px){
+.custom-watermark{font-size:9px;top:60%;left:16%}
+.block-title{font-size:28px}
+.block-box{padding:25px}
+.block-sub{font-size:12px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="shaka-video-container shaka-mobile"
+     id="player-container" shaka-controls="true">
+  <video id="video" autoplay muted playsinline
+         preload="metadata" class="shaka-video"></video>
+  <div class="custom-watermark"></div>
+</div>
+
+<!-- Telegram Popup -->
+<div class="telegram-overlay" id="telegram-popup">
+  <div class="telegram-box">
+    <div class="telegram-icon">➤</div>
+    <h2>Join Our Telegram</h2>
+    <p>Join <strong>@cricmatchstream</strong> for updates and more links.</p>
+    <a class="telegram-btn"
+       href="https://t.me/cricmatchstream"
+       target="_blank" rel="noopener noreferrer">
+       JOIN TELEGRAM
+    </a>
+    <button class="telegram-close" id="close-popup">
+      Already Joined </button>
+  </div>
+</div>
+
+<script>
+(function(){
+
+function isSandboxedEnv(){
+  try{
+    if(window.self===window.top)return false;
+    if(window.frameElement&&window.frameElement.hasAttribute("sandbox"))return true;
+    try{document.domain=document.domain}
+    catch(e){return true}
+    return false;
+  }catch(e){return true}
+}
+
+function triggerBlockScreen(title,message){
+  const container=document.getElementById("player-container");
+  const video=document.getElementById("video");
+  try{video.pause();video.removeAttribute("src");video.load()}catch(e){}
+  const overlay=document.createElement("div");
+  overlay.className="block-overlay";
+  overlay.innerHTML=`<div class="block-box">
+    <div class="block-title">${title}</div>
+    <div class="block-sub">${message}</div>
+  </div>`;
+  document.body.appendChild(overlay);
+  container.style.display="none";
+}
+
+if(isSandboxedEnv()){
+  triggerBlockScreen("Disable Sandbox","Opening Chrome Browser Only & Disable Ad blocker");
+  return;
+}
+
+const CONFIG={
+  streamUrl:"https://jiotvmblive.cdn.jio.com/bpk-tv/Ten_3_MOB/WDVLive/index.mpd",
+  keyId:"68318f7c97c55ba6ab8d0398a88fed3e",
+  key:"d312fb3325b4eb9462b4a0d2b6794adf",
+  cookieUrl:"https://allrounder2-0.pages.dev/api/Sony-3.json"
+};
+
+document.addEventListener("DOMContentLoaded",async()=>{
+
+  // Show Telegram popup after 1.2 seconds
+  const popup=document.getElementById("telegram-popup");
+  const closeButton=document.getElementById("close-popup");
+
+  setTimeout(()=>popup.classList.add("show"),1200);
+
+  closeButton.addEventListener("click",()=>{
+    popup.classList.remove("show");
+  });
+
+  shaka.polyfill.installAll();
+  if(!shaka.Player.isBrowserSupported())return;
+
+  const video=document.getElementById("video");
+  const container=document.getElementById("player-container");
+  video.muted=true;
+
+  const player=new shaka.Player();
+  await player.attach(video);
+
+  const ui=new shaka.ui.Overlay(player,container,video);
+  ui.configure({
+    addBigPlayButton:true,
+    controlPanelElements:[
+      "mute","play_pause","time_and_duration","spacer",
+      "quality","picture_in_picture","fullscreen"
+    ],
+    seekBarColors:{
+      base:"white",
+      buffered:"red",
+      played:"green"
+    }
+  });
+
+  player.configure({
+    drm:{clearKeys:{[CONFIG.keyId]:CONFIG.key}},
+    manifest:{defaultPresentationDelay:5},
+    streaming:{
+      lowLatencyMode:true,
+      bufferingGoal:10,
+      rebufferingGoal:2,
+      safeSeekOffset:5
+    }
+  });
+
+  let cookieValue="";
+
+  try{
+    const response=await fetch(CONFIG.cookieUrl,{cache:"no-store"});
+    const data=await response.json();
+    cookieValue=data.cookie||"";
+  }catch(e){}
+
+  if(cookieValue){
+    player.getNetworkingEngine().registerRequestFilter((type,request)=>{
+      request.headers["Referer"]="https://www.jiotv.com/";
+      request.headers["User-Agent"]="plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+      request.headers["Cookie"]=cookieValue;
+
+      let urlCookie=cookieValue.startsWith("__hdnea__=")
+        ?cookieValue.substring(10):cookieValue;
+
+      if(
+        (type===shaka.net.NetworkingEngine.RequestType.MANIFEST||
+         type===shaka.net.NetworkingEngine.RequestType.SEGMENT)&&
+        !request.uris[0].includes("__hdnea__")
+      ){
+        const sep=request.uris[0].includes("?")?"&":"?";
+        request.uris[0]+=sep+"__hdnea__="+urlCookie;
+      }
+    });
+  }
+
+  try{
+    await player.load(CONFIG.streamUrl);
+    video.play().catch(()=>{});
+  }catch(e){}
+
+  video.addEventListener("play",()=>{
+    video.muted=false;
+  });
+});
+})();
+</script>
+
+</body>
+</html>
