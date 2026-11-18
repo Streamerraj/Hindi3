@@ -7,56 +7,112 @@
 <meta name="referrer" content="no-referrer">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>@Cricmatchstream</title>
+<title>@CRICMATCHSTREAM</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.2/dist/controls.css">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#0a0a0a;overflow:hidden;font-family:Arial,sans-serif}
+html,body{width:100%;height:100%;background:#0a0a0a;overflow:hidden;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
 #player-container{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center}
 video{width:100%;height:100%;object-fit:contain;background:#000}
-#status{position:fixed;top:max(16px,env(safe-area-inset-top));right:16px;z-index:9997;display:flex;align-items:center;gap:7px;padding:6px 15px;background:rgba(10,10,10,.88);font-size:12px;border-radius:24px;opacity:0;pointer-events:none;color:#ddd}
-#status.show{opacity:1}
-.st-dot{width:7px;height:7px;border-radius:50%;background:#60a5fa}
-#status.live .st-dot{background:#22d3a0}
-#status.warn .st-dot{background:#fb923c}
-#status.err .st-dot{background:#f87171}
-.sp-fit-btn{background:transparent!important;border:none!important;padding:0 7px!important;color:white!important;cursor:pointer}
-.fit-pill{font-size:10px;font-weight:bold;padding:4px 7px;border:1px solid #aaa;border-radius:4px;color:white}
-.shaka-controls-container button{color:#fff!important}
-.shaka-video-container{background:#000!important}
 
-/* Telegram popup */
-.telegram-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.82);backdrop-filter:blur(6px)}
-.telegram-popup{width:100%;max-width:350px;padding:28px 22px;text-align:center;color:#fff;background:#111827;border:1px solid #263449;border-radius:18px;box-shadow:0 15px 50px #0009}
-.telegram-icon{width:62px;height:62px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#229ED9;font-size:32px}
-.telegram-popup h2{margin-bottom:10px;font-size:22px}
-.telegram-popup p{margin-bottom:22px;color:#cbd5e1;font-size:14px;line-height:1.6}
-.telegram-popup a,.telegram-popup button{display:block;width:100%;padding:13px;border:0;border-radius:10px;font-size:15px;font-weight:bold;text-decoration:none;cursor:pointer}
-.telegram-popup a{margin-bottom:10px;color:white;background:#229ED9}
-.telegram-popup button{color:#e5e7eb;background:#273244}
-.telegram-name{color:#38bdf8;font-weight:bold}
+/* Channel title */
+#channel-title{
+position:fixed;top:max(16px,env(safe-area-inset-top));left:15px;
+z-index:9998;padding:8px 13px;background:rgba(10,10,10,.88);
+border:1px solid rgba(255,255,255,.13);border-radius:20px;
+color:#fff;font-size:12px;font-weight:800;letter-spacing:1px;
+backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+pointer-events:none
+}
+
+/* Status */
+#status{position:fixed;top:max(16px,env(safe-area-inset-top));right:16px;z-index:9997;display:flex;align-items:center;gap:7px;padding:6px 15px 6px 11px;background:rgba(10,10,10,.88);border:1px solid rgba(255,255,255,.07);font-size:11.5px;font-weight:500;letter-spacing:.2px;border-radius:24px;pointer-events:none;opacity:0;transition:opacity .25s ease;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);white-space:nowrap;box-shadow:0 2px 14px rgba(0,0,0,.45);color:#c0c0c0}
+#status.show{opacity:1}
+.st-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;background:#60a5fa}
+#status.live .st-dot{background:#22d3a0;animation:dot-pulse 2s ease-in-out infinite}
+#status.warn .st-dot{background:#fb923c;animation:dot-pulse 1s ease-in-out infinite}
+#status.err .st-dot{background:#f87171}
+@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.55)}}
+
+/* Fit button */
+.sp-fit-btn{background:transparent!important;border:none!important;cursor:pointer!important;padding:0 7px!important;min-width:auto!important;opacity:.75;display:flex;align-items:center;justify-content:center;height:100%;transition:opacity .15s;color:#fff!important}
+.sp-fit-btn:hover{opacity:1}
+.fit-pill{font-size:10px;font-weight:700;letter-spacing:.4px;padding:3px 7px;border-radius:4px;line-height:1;border:1.5px solid rgba(255,255,255,.28);color:rgba(255,255,255,.8);pointer-events:none;white-space:nowrap;transition:border-color .2s,color .2s}
+.sp-fit-btn:hover .fit-pill{border-color:rgba(255,255,255,.55);color:#fff}
+.sp-fit-btn.mode-fill .fit-pill{border-color:#38bdf8;color:#38bdf8}
+.sp-fit-btn.mode-cover .fit-pill{border-color:#a78bfa;color:#a78bfa}
+.shaka-controls-container button{color:#fff!important}
+.shaka-video-container{background-color:#000!important}
+@media(max-width:380px){.fit-pill{font-size:9px;padding:2px 5px}}
+
+/* Popup */
+#join-overlay{
+position:fixed;inset:0;z-index:10000;
+display:flex;align-items:center;justify-content:center;
+padding:20px;background:rgba(0,0,0,.78);
+backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+}
+#join-box{
+width:100%;max-width:350px;padding:30px 23px;
+border-radius:18px;text-align:center;
+background:linear-gradient(145deg,#171717,#080808);
+border:1px solid rgba(255,255,255,.13);
+box-shadow:0 15px 60px rgba(0,0,0,.7);
+animation:popup-in .35s ease;
+}
+@keyframes popup-in{
+from{opacity:0;transform:scale(.88)}
+to{opacity:1;transform:scale(1)}
+}
+.telegram-icon{
+width:62px;height:62px;margin:0 auto 16px;
+border-radius:50%;background:#168bd0;
+display:flex;align-items:center;justify-content:center;
+font-size:29px;color:white;
+}
+#join-box h2{
+color:#fff;font-size:23px;font-weight:900;
+letter-spacing:1px;margin-bottom:9px;
+}
+#join-box p{
+color:#aaa;font-size:13px;line-height:1.6;
+margin-bottom:23px;
+}
+.join-btn{
+display:block;width:100%;padding:13px 12px;
+border:0;border-radius:9px;text-decoration:none;
+font-size:14px;font-weight:800;cursor:pointer;
+}
+.join-now{background:#168bd0;color:white;margin-bottom:10px}
+.already-joined{background:#252525;color:#fff}
+.join-btn:active{transform:scale(.98)}
 </style>
 </head>
 
 <body>
 
 <div id="player-container">
-  <video id="video" autoplay muted playsinline preload="metadata"></video>
+<video id="video" autoplay muted playsinline preload="metadata"></video>
 </div>
 
-<div id="status"><span class="st-dot"></span><span id="statusText">Live</span></div>
+<div id="channel-title">@CRICMATCHSTREAM</div>
 
-<!-- Telegram popup -->
-<div id="telegramOverlay" class="telegram-overlay">
-  <div class="telegram-popup">
-    <div class="telegram-icon">✈</div>
-    <h2>Join Our Telegram</h2>
-    <p>Join <span class="telegram-name">@cricmatchstream</span> for live links and updates.</p>
-    <a href="https://t.me/cricmatchstream" target="_blank" rel="noopener noreferrer">JOIN CHANNEL</a>
-    <button id="closePopup">ALREADY JOINED</button>
-  </div>
+<div id="status">
+<span class="st-dot"></span>
+<span id="statusText">Live</span>
+</div>
+
+<!-- Telegram Popup -->
+<div id="join-overlay">
+<div id="join-box">
+<div class="telegram-icon">➤</div>
+<h2>@CRICMATCHSTREAM</h2>
+<p>Join our Telegram channel for the latest cricket updates and notifications.</p>
+<a class="join-btn join-now" href="https://t.me/cricmatchstream" target="_blank" rel="noopener noreferrer">JOIN TELEGRAM</a>
+<button class="join-btn already-joined" id="close-popup">ALREADY JOINED</button>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.2/dist/shaka-player.ui.min.js"></script>
@@ -65,16 +121,25 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 (function(){
 "use strict";
 
+const popup=document.getElementById("join-overlay");
+document.getElementById("close-popup").addEventListener("click",function(){
+popup.style.display="none";
+});
+
 const CONFIG={
-  streamUrl:"https://jiotvpllive.cdn.jio.com/bpk-tv/SonySportsTen3HinHDSTB_BTS/WDVLive/index.mpd",
-  drmKeys:[ 
-        "c20ba4e9d0635bab9f17b177f0d91039:fcb4a266539ac7b03ef02c5600c5598d",
-        "c592c427c0d35e9a8ad88cdcb76a16c1:8ecb737e4015c22451d6c14fe37e9e15",
-        "10f4930166fa5b6ab5d71a4a978bdfac:9dfa22aa4d6a3d820101f59013de0236",
-        "140edf90fa0b5c99864f2442df4df535:991b51ed2e690c96163a31ae4a6f6452",
-        "e392571e46bd5461854986ae9e58083d:1167c024aa8bbad2c1beaf218cfeec11"
-  ],
-  cookieUrl:"https://allrounder3-0.pages.dev/api/hindi.json"
+apiUrl:"https://allrounder3-0.pages.dev/api/sports.json",
+channelId:"STEN3",
+fallback:{
+streamUrl:"https://jiotvpllive.cdn.jio.com/bpk-tv/SonySportsTen3HinHDSTB_BTS/WDVLive/index.mpd",
+drmKeys:[
+"c20ba4e9d0635bab9f17b177f0d91039:fcb4a266539ac7b03ef02c5600c5598d",
+"c592c427c0d35e9a8ad88cdcb76a16c1:8ecb737e4015c22451d6c14fe37e9e15",
+"10f4930166fa5b6ab5d71a4a978bdfac:9dfa22aa4d6a3d820101f59013de0236",
+"140edf90fa0b5c99864f2442df4df535:991b51ed2e690c96163a31ae4a6f6452",
+"e392571e46bd5461854986ae9e58083d:1167c024aa8bbad2c1beaf218cfeec11"
+],
+cookie:""
+}
 };
 
 const video=document.getElementById("video");
@@ -82,147 +147,237 @@ const container=document.getElementById("player-container");
 const statusEl=document.getElementById("status");
 const statusText=document.getElementById("statusText");
 
-document.getElementById("closePopup").addEventListener("click",function(){
-  document.getElementById("telegramOverlay").style.display="none";
+let statusTimer=null;
+
+function setStatus(msg,type,dur){
+statusText.textContent=msg||"Live";
+statusEl.className="show "+(type||"live");
+if(statusTimer)clearTimeout(statusTimer);
+if(dur!==0){
+statusTimer=setTimeout(function(){
+statusEl.className=statusEl.className.replace("show","").trim();
+statusTimer=null;
+},dur||4000);
+}
+}
+
+async function fetchChannel(id){
+const res=await fetch(CONFIG.apiUrl,{cache:"no-store"});
+if(!res.ok)throw new Error("HTTP "+res.status);
+const data=await res.json();
+let channels=Array.isArray(data)?data:(data.channels||data.data||data.items||[]);
+const channel=channels.find(function(c){
+return c&&(c.id===id||c.name===id);
+});
+if(!channel)throw new Error("Channel "+id+" not found");
+return channel;
+}
+
+function injectFitButton(containerEl,videoEl){
+const panel=containerEl.querySelector(".shaka-controls-button-panel");
+if(!panel)return false;
+
+const anchor=panel.querySelector(".shaka-fullscreen-button");
+const FITS=["contain","fill","cover"];
+const FIT_LABELS={contain:"Fit",fill:"Fill",cover:"Zoom"};
+let fitIdx=0;
+
+const fitBtn=document.createElement("button");
+fitBtn.className="sp-fit-btn";
+fitBtn.title="Video Fit: Fit";
+fitBtn.setAttribute("aria-label","Cycle Video Fit Mode");
+fitBtn.innerHTML='<span class="fit-pill">—</span>';
+
+if(anchor)panel.insertBefore(fitBtn,anchor);
+else panel.appendChild(fitBtn);
+
+let currentRatio="—";
+
+function applyFit(i){
+fitIdx=i;
+const m=FITS[i];
+videoEl.style.objectFit=m;
+fitBtn.classList.remove("mode-fill","mode-cover");
+if(m!=="contain")fitBtn.classList.add("mode-"+m);
+fitBtn.title="Video Fit: "+FIT_LABELS[m];
+const pill=fitBtn.querySelector(".fit-pill");
+if(pill)pill.textContent=m==="contain"?currentRatio:FIT_LABELS[m];
+}
+
+fitBtn.addEventListener("click",function(e){
+e.stopPropagation();
+applyFit((fitIdx+1)%FITS.length);
 });
 
-function setStatus(message,type,duration){
-  statusText.textContent=message;
-  statusEl.className="show "+(type||"live");
-  if(setStatus.timer)clearTimeout(setStatus.timer);
-  if(duration!==0){
-    setStatus.timer=setTimeout(()=>statusEl.classList.remove("show"),duration||4000);
-  }
+["fullscreenchange","webkitfullscreenchange"].forEach(function(ev){
+document.addEventListener(ev,function(){
+if(!(document.fullscreenElement||document.webkitFullscreenElement))applyFit(0);
+});
+});
+
+function ratioLabel(w,h){
+if(!w||!h)return "—";
+function gcd(a,b){return b?gcd(b,a%b):a;}
+const g=gcd(w,h)||1;
+const rw=w/g,rh=h/g;
+const named={"16:9":16/9,"4:3":4/3,"21:9":21/9,"1:1":1,"9:16":9/16,"3:2":3/2,"5:4":5/4,"2:1":2};
+const real=w/h;
+let best=null,bestD=.02;
+Object.keys(named).forEach(function(k){
+const d=Math.abs(named[k]-real);
+if(d<bestD){bestD=d;best=k;}
+});
+if(best)return best;
+if(rw<=40&&rh<=40)return rw+":"+rh;
+return real.toFixed(2)+":1";
 }
 
-function buildClearKeys(keys){
-  const result={};
-  keys.forEach(pair=>{
-    const i=pair.indexOf(":");
-    if(i>0)result[pair.slice(0,i).trim()]=pair.slice(i+1).trim();
-  });
-  return result;
+let ratioTries=0;
+function updateRatio(){
+const pill=fitBtn.querySelector(".fit-pill");
+if(!pill)return;
+if(videoEl.videoWidth>0){
+currentRatio=ratioLabel(videoEl.videoWidth,videoEl.videoHeight);
+if(FITS[fitIdx]==="contain")pill.textContent=currentRatio;
+ratioTries=0;
+}else if(ratioTries<15){
+ratioTries++;
+setTimeout(updateRatio,700);
+}
 }
 
-function injectFitButton(){
-  const panel=container.querySelector(".shaka-controls-button-panel");
-  if(!panel||panel.querySelector(".sp-fit-btn"))return !!panel;
+videoEl.addEventListener("loadedmetadata",function(){
+ratioTries=0;
+updateRatio();
+});
+videoEl.addEventListener("resize",updateRatio);
+videoEl.addEventListener("timeupdate",function onFirstFrame(){
+videoEl.removeEventListener("timeupdate",onFirstFrame);
+updateRatio();
+});
+updateRatio();
+return true;
+}
 
-  const button=document.createElement("button");
-  button.className="sp-fit-btn";
-  button.title="Change video fit";
-  button.innerHTML='<span class="fit-pill">FIT</span>';
-
-  const modes=["contain","fill","cover"];
-  const labels=["FIT","FILL","ZOOM"];
-  let index=0;
-
-  button.addEventListener("click",event=>{
-    event.stopPropagation();
-    index=(index+1)%modes.length;
-    video.style.objectFit=modes[index];
-    button.querySelector(".fit-pill").textContent=labels[index];
-  });
-
-  const fullscreen=panel.querySelector(".shaka-fullscreen-button");
-  if(fullscreen)panel.insertBefore(button,fullscreen);
-  else panel.appendChild(button);
-  return true;
+function buildClearKeys(keyArray){
+const clearKeys={};
+if(!Array.isArray(keyArray))return clearKeys;
+keyArray.forEach(function(pair){
+if(!pair||typeof pair!=="string")return;
+const idx=pair.indexOf(":");
+if(idx===-1)return;
+const kid=pair.slice(0,idx).trim();
+const key=pair.slice(idx+1).trim();
+if(kid&&key)clearKeys[kid]=key;
+});
+return clearKeys;
 }
 
 async function initPlayer(){
-  try{
-    shaka.polyfill.installAll();
+shaka.polyfill.installAll();
 
-    if(!shaka.Player.isBrowserSupported()){
-      setStatus("Browser Not Supported","err",0);
-      return;
-    }
-
-    const player=new shaka.Player();
-    await player.attach(video);
-
-    const ui=new shaka.ui.Overlay(player,container,video);
-    ui.configure({
-      addBigPlayButton:true,
-      controlPanelElements:[
-        "play_pause","mute","time_and_duration","spacer",
-        "quality","picture_in_picture","fullscreen"
-      ],
-      seekBarColors:{
-        base:"#828282",
-        buffered:"#ffc336",
-        played:"#1fc7ff"
-      }
-    });
-
-    let attempts=0;
-    const buttonTimer=setInterval(()=>{
-      if(injectFitButton()||++attempts>=20)clearInterval(buttonTimer);
-    },150);
-
-    player.configure({
-      drm:{clearKeys:buildClearKeys(CONFIG.drmKeys)},
-      manifest:{defaultPresentationDelay:5},
-      streaming:{
-        lowLatencyMode:true,
-        bufferingGoal:10,
-        rebufferingGoal:2,
-        safeSeekOffset:5
-      }
-    });
-
-    let cookieValue="";
-    try{
-      const response=await fetch(CONFIG.cookieUrl,{cache:"no-store"});
-      if(!response.ok)throw new Error("Cookie request failed");
-      const data=await response.json();
-      cookieValue=data.cookie||"";
-    }catch(error){
-      console.warn("Cookie request failed.");
-    }
-
-    if(cookieValue){
-      player.getNetworkingEngine().registerRequestFilter((type,request)=>{
-        request.headers=request.headers||{};
-        request.headers["Cookie"]=cookieValue;
-
-        const isMedia=
-          type===shaka.net.NetworkingEngine.RequestType.MANIFEST||
-          type===shaka.net.NetworkingEngine.RequestType.SEGMENT;
-
-        if(isMedia&&request.uris&&request.uris[0]&&
-           !request.uris[0].includes("__hdnea__")){
-          const token=cookieValue.startsWith("__hdnea__=")
-            ?cookieValue.slice(10):cookieValue;
-          request.uris[0]+=(request.uris[0].includes("?")?"&":"?")+"__hdnea__="+token;
-        }
-      });
-    }
-
-    player.addEventListener("error",event=>{
-      setStatus("Stream error: "+(event.detail.code||""),"err",5000);
-    });
-
-    setStatus("Loading…","warn",0);
-    await player.load(CONFIG.streamUrl);
-    setStatus("Live","live",4000);
-    video.play().catch(()=>{});
-
-    video.addEventListener("play",()=>{video.muted=false;});
-    container.addEventListener("pointerdown",()=>{video.muted=false;},{once:true});
-
-  }catch(error){
-    console.error("Player initialization failed:",error);
-    setStatus("Player initialization failed","err",0);
-  }
+if(!shaka.Player.isBrowserSupported()){
+setStatus("Browser Not Supported","err",0);
+return;
 }
 
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",initPlayer);
-}else{
-  initPlayer();
+const player=new shaka.Player();
+await player.attach(video);
+
+const ui=new shaka.ui.Overlay(player,container,video);
+ui.configure({
+addBigPlayButton:true,
+controlPanelElements:[
+"play_pause","mute","time_and_duration","spacer",
+"quality","picture_in_picture","fullscreen"
+],
+seekBarColors:{
+base:"#828282",
+buffered:"#ffc336",
+played:"#1fc7ff"
 }
+});
+
+let injectCount=0;
+(function tryInject(){
+if(injectFitButton(container,video))return;
+if(++injectCount<5)setTimeout(tryInject,150);
+})();
+
+setStatus("Fetching channel…","warn",0);
+
+let channel;
+try{
+channel=await fetchChannel(CONFIG.channelId);
+}catch(e){
+console.warn("API fetch failed, using fallback:",e);
+setStatus("API failed — using fallback","warn",3000);
+channel={
+stream_url:CONFIG.fallback.streamUrl,
+key:CONFIG.fallback.drmKeys,
+cookie:CONFIG.fallback.cookie
+};
+}
+
+const streamUrl=channel.stream_url||CONFIG.fallback.streamUrl;
+const drmKeys=channel.key||channel.drmKeys||CONFIG.fallback.drmKeys;
+const clearKeys=buildClearKeys(drmKeys);
+
+player.configure({
+drm:{clearKeys:clearKeys},
+manifest:{defaultPresentationDelay:5},
+streaming:{
+lowLatencyMode:true,
+bufferingGoal:10,
+rebufferingGoal:2,
+safeSeekOffset:5
+}
+});
+
+let cookieValue=channel.cookie||"";
+let urlCookie=cookieValue.startsWith("__hdnea__=")?cookieValue.slice(10):cookieValue;
+
+if(cookieValue){
+player.getNetworkingEngine().registerRequestFilter(function(type,request){
+request.headers["Referer"]="https://www.jiotv.com/";
+request.headers["User-Agent"]="plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+request.headers["Cookie"]=cookieValue.startsWith("__hdnea__=")?cookieValue:"__hdnea__="+cookieValue;
+
+if((type===shaka.net.NetworkingEngine.RequestType.MANIFEST||
+type===shaka.net.NetworkingEngine.RequestType.SEGMENT)&&
+urlCookie&&!request.uris[0].includes("__hdnea__")){
+const sep=request.uris[0].includes("?")?"&":"?";
+request.uris[0]+=sep+"__hdnea__="+urlCookie;
+}
+});
+}
+
+try{
+setStatus("Loading…","warn",0);
+await player.load(streamUrl);
+setStatus("Live","live",4000);
+video.play().catch(function(){});
+}catch(e){
+console.error(e);
+setStatus("Error loading stream","err",0);
+}
+
+video.addEventListener("play",function(){
+video.muted=false;
+});
+
+function unmuteOnce(){video.muted=false;}
+container.addEventListener("pointerdown",unmuteOnce,{capture:true,once:true});
+container.addEventListener("click",unmuteOnce,{capture:true,once:true});
+
+player.addEventListener("error",function(ev){
+const err=ev.detail;
+setStatus("Stream error: "+(err.code||""),"err",5000);
+});
+}
+
+document.addEventListener("DOMContentLoaded",initPlayer);
+
 })();
 </script>
 
